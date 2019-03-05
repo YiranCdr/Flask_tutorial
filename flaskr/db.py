@@ -15,10 +15,10 @@ def get_db():
         )
         # sqlite3.Row 告诉连接返回类似于字典的行，这样可以通过列名称来操作 数据。
         g.db.row_factory = sqlite3.Row
-    return g
+    return g.db
 
 
-def close_db():
+def close_db(e=None):
     db = g.pop('db', None)
     if db is not None:
         db.close()
@@ -27,8 +27,8 @@ def close_db():
 def init_db():
     # 每个请求处理函数中可以通过 get_db() 来得到当前打开的数据库连接。
     db = get_db()
-    with current_app.open_resources('schema.sql') as f:
-        db.excutescript(f.read().decode('utf8'))
+    with current_app.open_resource('schema.sql') as f:
+        db.executescript(f.read().decode('utf8'))
 
 
 # Click 是用 Python 写的一个第三方模块，用于快速创建命令行。
@@ -44,3 +44,8 @@ def init_db():
 def init_db_command():
     init_db()
     click.echo('Database initialized. ')
+
+
+def init_app(app):
+    app.teardown_appcontext(close_db)
+    app.cli.add_command(init_db_command)

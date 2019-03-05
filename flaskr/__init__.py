@@ -25,6 +25,13 @@ def create_app(test_config=None):
     def hello():
         return 'hello world!'
 
+    # register
+    from . import db
+    db.init_app(app)
+    from . import auth
+    app.register_blueprint(auth.blue_print)
+
+
     return app
 
 
